@@ -37,6 +37,7 @@ const columns: TableColumnsType<Medicine> = [
     key: 'administrationTime',
     render: (administrationTime: string | null) => {
       if (!administrationTime) return '-';
+      if (administrationTime === 'CONTINUA') return 'Infusión continua';
 
       const number = administrationTime.split(' ')[0];
 
