@@ -27,7 +27,7 @@ export const useMedicineStore = create<MedicinesState>()(
     medicines: [],
     loading: false,
     error: null,
-    originalMedicines: [],
+    originalMedicines: MEDICINES,
     search: '',
 
     fetchMedicines: async () => {

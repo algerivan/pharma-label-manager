@@ -11,7 +11,7 @@ import {
   LeftOutlined,
   RightOutlined,
   DatabaseOutlined,
-  IdcardOutlined,
+  ContainerOutlined,
 } from '@ant-design/icons';
 
 const { Sider, Content } = Layout;
@@ -74,7 +74,7 @@ const AuthenticatedLayout = ({ children }: AuthenticatedLayoutProps) => {
           items={[
             {
               key: '1',
-              icon: <IdcardOutlined />,
+              icon: <ContainerOutlined />,
               label: 'Etiquetas',
               onClick: () => router.push('/labels'),
             },
