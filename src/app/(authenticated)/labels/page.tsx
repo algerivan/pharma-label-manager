@@ -1,7 +1,6 @@
 'use client';
 
 import type { TableColumnsType } from 'antd';
-import { Table } from 'antd';
 import LabelForm from './_components/label-form.component';
 
 type MedicationLabel = {

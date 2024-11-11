@@ -60,7 +60,7 @@ export default function LabelForm() {
 
   const handleAdd = () => {
     const newData: MedicationLabelInput = {
-      key: `${count}`,
+      key: `${dataSource.length + 1}`,
       date: '',
       service: '',
       bed: 0,
@@ -69,6 +69,7 @@ export default function LabelForm() {
       dosage: 0,
       hour: 0,
     };
+    console.log({ newData, editingKey, count });
     setDataSource([newData, ...dataSource]);
     setEditingKey(newData.key);
     setCount(count + 1);
@@ -235,6 +236,7 @@ export default function LabelForm() {
               onClick={() => save(record.key)}
               type='link'
               style={{ marginRight: 8 }}
+              htmlType='submit'
             >
               Guardar
             </Button>
@@ -278,6 +280,7 @@ export default function LabelForm() {
         columns={columns}
         rowClassName={() => 'editable-row'}
         pagination={false}
+        className='overflow-x-auto bg-white rounded-md'
       />
     </Form>
   );
