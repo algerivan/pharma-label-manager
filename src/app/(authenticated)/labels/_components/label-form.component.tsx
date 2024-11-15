@@ -2,7 +2,9 @@ import { Button, Form, Input, Select, DatePicker, Table } from 'antd';
 import { useState } from 'react';
 import { useMedicineStore } from '@/app/_store/useMedicineStore';
 import type { ColumnsType } from 'antd/es/table';
+import { EditOutlined, DeleteOutlined, SaveOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import { COLORS } from '@/app/_utils/colors.utils';
 
 interface MedicationLabelInput {
   key: string;
@@ -52,6 +54,7 @@ export default function LabelForm() {
   const [form] = Form.useForm();
   const [dataSource, setDataSource] = useState<MedicationLabelInput[]>([]);
   const [editingKey, setEditingKey] = useState<string>('');
+  const [isAddingNew, setIsAddingNew] = useState<boolean>(false);
   const [count, setCount] = useState<number>(0);
 
   const { originalMedicines } = useMedicineStore();
@@ -69,10 +72,17 @@ export default function LabelForm() {
       dosage: 0,
       hour: 0,
     };
-    console.log({ newData, editingKey, count });
+    setIsAddingNew(true);
     setDataSource([newData, ...dataSource]);
     setEditingKey(newData.key);
+    form.resetFields();
+    form.setFieldsValue({ ...newData });
     setCount(count + 1);
+  };
+
+  const handleDelete = (key: string) => {
+    const newData = dataSource.filter((item) => item.key !== key);
+    setDataSource(newData);
   };
 
   const edit = (record: MedicationLabelInput) => {
@@ -81,11 +91,22 @@ export default function LabelForm() {
   };
 
   const cancel = () => {
-    setEditingKey('');
+    setIsAddingNew(false);
+    if (isAddingNew) {
+      const newData = dataSource.filter((item) => item.key !== editingKey);
+      setDataSource(newData);
+      setEditingKey('');
+    } else {
+      setEditingKey('');
+    }
   };
 
   const save = async (key: string) => {
     try {
+      const isValid = await form.validateFields();
+      console.log({ isValid });
+      if (!isValid) return;
+      setIsAddingNew(false);
       const row = (await form.validateFields()) as MedicationLabelInput;
       const newData = [...dataSource];
       const index = newData.findIndex((item) => key === item.key);
@@ -115,6 +136,7 @@ export default function LabelForm() {
             name='date'
             style={{ margin: 0 }}
             className='max-w-[200px]'
+            rules={[{ required: true, message: 'Fecha es requerida' }]}
           >
             <DatePicker format='DD/MM/YYYY' />
           </Form.Item>
@@ -132,6 +154,7 @@ export default function LabelForm() {
             name='service'
             style={{ margin: 0 }}
             className='min-w-[150px]'
+            rules={[{ required: true, message: 'Servicio es requerido' }]}
           >
             <Select options={SERVICE_OPTIONS} />
           </Form.Item>
@@ -145,7 +168,12 @@ export default function LabelForm() {
       dataIndex: 'bed',
       render: (text, record) => {
         return isEditing(record) ? (
-          <Form.Item name='bed' style={{ margin: 0 }} className='max-w-[100px]'>
+          <Form.Item
+            name='bed'
+            style={{ margin: 0 }}
+            className='max-w-[100px]'
+            rules={[{ required: true, message: 'Cama es requerida' }]}
+          >
             <Input type='number' />
           </Form.Item>
         ) : (
@@ -162,6 +190,7 @@ export default function LabelForm() {
             name='patientName'
             style={{ margin: 0 }}
             className='min-w-[200px]'
+            rules={[{ required: true, message: 'Paciente es requerido' }]}
           >
             <Select options={PATIENTS_DATA} />
           </Form.Item>
@@ -179,6 +208,7 @@ export default function LabelForm() {
             name='medication'
             style={{ margin: 0 }}
             className='min-w-[200px]'
+            rules={[{ required: true, message: 'Medicamento es requerido' }]}
           >
             <Select
               options={parseMedicinesToOptions(originalMedicines)}
@@ -199,7 +229,11 @@ export default function LabelForm() {
           <Form.Item
             name='dosage'
             style={{ margin: 0 }}
-            className='max-w-[100px]'
+            className='max-w-[110px]'
+            rules={[
+              { required: true, message: 'Dosis es requerida' },
+              { min: 1 },
+            ]}
           >
             <Input type='number' suffix='MG' />
           </Form.Item>
@@ -216,7 +250,8 @@ export default function LabelForm() {
           <Form.Item
             name='hour'
             style={{ margin: 0 }}
-            className='max-w-[100px]'
+            className='max-w-[110px]'
+            rules={[{ required: true, message: 'Hora es requerida' }]}
           >
             <Input type='number' suffix='HRS' />
           </Form.Item>
@@ -226,8 +261,23 @@ export default function LabelForm() {
       },
     },
     {
+      title: 'Cantidad a tomar',
+      dataIndex: 'quantity',
+      render: (text, record) => {
+        return isEditing(record) ? '...' : <>{text}</>;
+      },
+    },
+    {
+      title: 'Volumen final',
+      dataIndex: 'finalVolume',
+      render: (text, record) => {
+        return isEditing(record) ? '...' : <>{text}</>;
+      },
+    },
+    {
       title: 'Acciones',
       dataIndex: 'operation',
+      width: 150,
       render: (_, record) => {
         const editable = isEditing(record);
         return editable ? (
@@ -237,21 +287,38 @@ export default function LabelForm() {
               type='link'
               style={{ marginRight: 8 }}
               htmlType='submit'
+              icon={<SaveOutlined />}
             >
               Guardar
             </Button>
-            <Button onClick={cancel} type='link'>
+            <Button
+              onClick={cancel}
+              type='link'
+              icon={<DeleteOutlined />}
+              style={{
+                color: COLORS.feedback.error,
+              }}
+            >
               Cancelar
             </Button>
           </span>
         ) : (
-          <Button
-            disabled={editingKey !== ''}
-            onClick={() => edit(record)}
-            type='link'
-          >
-            Editar
-          </Button>
+          <span className='flex flex-row gap-4 w-full items-center'>
+            <EditOutlined
+              onClick={() => edit(record)}
+              style={{
+                fontSize: '18px',
+                color: COLORS.text,
+              }}
+            />
+            <DeleteOutlined
+              onClick={() => handleDelete(record.key)}
+              style={{
+                fontSize: '18px',
+                color: COLORS.feedback.error,
+              }}
+            />
+          </span>
         );
       },
     },
