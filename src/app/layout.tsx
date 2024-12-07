@@ -7,7 +7,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'Pharma Label Manager',
-  description: 'Pharma Label Manager Description',
+  description: 'This is a better description',
 };
 
 export default function RootLayout({
