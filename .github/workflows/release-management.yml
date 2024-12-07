@@ -1,0 +1,33 @@
+name: Release Management
+
+on:
+  create:
+    branches:
+      - 'release/*'
+      - 'hotfix/*'
+  push:
+    branches:
+      - master
+
+jobs:
+  handle_release_branch:
+    if: github.event_name == 'create' && (startsWith(github.ref, 'refs/heads/release/') || startsWith(github.ref, 'refs/heads/hotfix/'))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Log Release Creation
+        run: echo "🎉 Se creó una nueva rama de release/hotfix!"
+
+      - name: Create Release Draft
+        uses: release-drafter/release-drafter@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  update_master_release:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: release-drafter/release-drafter@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
